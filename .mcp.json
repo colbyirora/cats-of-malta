@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "irora-city-v4": {
+      "command": "node",
+      "args": [
+        "/Users/colbymort/irora-city-v4/mcp-server/dist/index.js"
+      ]
+    }
+  }
+}
