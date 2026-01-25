@@ -1,0 +1,362 @@
+@import "tailwindcss";
+
+:root {
+  /* Mediterranean Palette with Maltese Red */
+  --terracotta: #C41E3A;
+  --terracotta-light: #E85A6B;
+  --terracotta-dark: #9B1B30;
+  --malta-blue: #4a90d9;
+  --malta-blue-light: #7eb3eb;
+  --sea-blue: #5bb8d9;
+  --golden-sun: #f5b642;
+  --stone: #e8e4e0;
+  --stone-dark: #9a9590;
+  --cream: #fdf8f3;
+  --warm-white: #fffcf9;
+
+  --background: var(--warm-white);
+  --foreground: #3d3835;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-terracotta: var(--terracotta);
+  --color-terracotta-light: var(--terracotta-light);
+  --color-terracotta-dark: var(--terracotta-dark);
+  --color-malta-blue: var(--malta-blue);
+  --color-malta-blue-light: var(--malta-blue-light);
+  --color-sea-blue: var(--sea-blue);
+  --color-golden-sun: var(--golden-sun);
+  --color-stone: var(--stone);
+  --color-stone-dark: var(--stone-dark);
+  --color-cream: var(--cream);
+  --color-warm-white: var(--warm-white);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Serif headings */
+.font-serif {
+  font-family: var(--font-playfair), Georgia, serif;
+}
+
+/* Mediterranean tile pattern background */
+.tile-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L60 30L30 60L0 30z' fill='none' stroke='%23C41E3A' stroke-width='0.5' opacity='0.07'/%3E%3Ccircle cx='30' cy='30' r='8' fill='none' stroke='%23C41E3A' stroke-width='0.5' opacity='0.05'/%3E%3C/svg%3E");
+}
+
+/* Cat silhouette pattern - larger spacing */
+.cat-pattern {
+  position: relative;
+}
+
+.cat-pattern::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url('/cat-silhouette-spaced.png');
+  background-size: 200px;
+  background-repeat: repeat;
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Postmark stamp style */
+.postmark {
+  position: relative;
+}
+
+.postmark::after {
+  content: 'MALTA';
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  font-family: var(--font-playfair), serif;
+  font-size: 8px;
+  font-weight: bold;
+  color: var(--terracotta);
+  background: var(--cream);
+  padding: 2px 6px;
+  border: 1px solid var(--terracotta);
+  border-radius: 2px;
+  transform: rotate(12deg);
+  letter-spacing: 1px;
+}
+
+/* Soft Card Style */
+.soft-card {
+  background: white;
+  border-radius: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s ease;
+}
+
+.soft-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1), 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* Soft Button Style */
+.soft-button {
+  background: linear-gradient(135deg, var(--terracotta) 0%, var(--terracotta-dark) 100%);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  box-shadow: 0 4px 15px rgba(212, 132, 92, 0.35);
+  transition: all 0.3s ease;
+}
+
+.soft-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(212, 132, 92, 0.45);
+}
+
+.soft-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(212, 132, 92, 0.3);
+}
+
+/* Section divider wave */
+.wave-divider {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  line-height: 0;
+}
+
+.wave-divider svg {
+  position: relative;
+  display: block;
+  width: calc(100% + 1.3px);
+  height: 80px;
+}
+
+/* Gradient backgrounds for smooth transitions */
+.gradient-cream-white {
+  background: linear-gradient(180deg, var(--cream) 0%, var(--warm-white) 100%);
+}
+
+.gradient-white-cream {
+  background: linear-gradient(180deg, var(--warm-white) 0%, var(--cream) 100%);
+}
+
+.gradient-hero {
+  background: linear-gradient(180deg, var(--warm-white) 0%, var(--cream) 50%, var(--terracotta-light) 100%);
+}
+
+/* Floating animation */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.float-animation {
+  animation: float 4s ease-in-out infinite;
+}
+
+/* Cat silhouette animations */
+@keyframes sway {
+  0%, 100% { transform: rotate(-2deg); }
+  50% { transform: rotate(2deg); }
+}
+
+@keyframes tailWag {
+  0%, 100% { transform: rotate(-10deg); }
+  50% { transform: rotate(10deg); }
+}
+
+@keyframes walkCat {
+  0% { transform: translateX(100vw); }
+  100% { transform: translateX(-200px); }
+}
+
+@keyframes legWalk {
+  0%, 100% { transform: rotate(-15deg); }
+  50% { transform: rotate(15deg); }
+}
+
+@keyframes stretch {
+  0%, 100% { transform: scaleX(1) translateY(0); }
+  50% { transform: scaleX(1.1) translateY(-3px); }
+}
+
+@keyframes breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes playBounce {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-5px) rotate(-5deg); }
+  75% { transform: translateY(-3px) rotate(5deg); }
+}
+
+@keyframes pawReach {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(-5px); }
+}
+
+@keyframes ballRoll {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  50% { transform: translateX(-8px) rotate(-180deg); }
+}
+
+/* Paw cursor trail */
+@keyframes pawFade {
+  0% {
+    opacity: 0.35;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.7);
+  }
+}
+
+/* Soft input style */
+.soft-input {
+  background: white;
+  border: 2px solid var(--stone);
+  border-radius: 16px;
+  transition: all 0.2s ease;
+}
+
+.soft-input:focus {
+  border-color: var(--terracotta-light);
+  box-shadow: 0 0 0 4px rgba(212, 132, 92, 0.1);
+  outline: none;
+}
+
+/* Badge styles */
+.soft-badge {
+  background: linear-gradient(135deg, var(--golden-sun) 0%, #f5a623 100%);
+  color: white;
+  border-radius: 50px;
+  box-shadow: 0 2px 8px rgba(245, 182, 66, 0.4);
+}
+
+.soft-badge-blue {
+  background: linear-gradient(135deg, var(--malta-blue) 0%, var(--sea-blue) 100%);
+  color: white;
+  border-radius: 50px;
+  box-shadow: 0 2px 8px rgba(74, 144, 217, 0.4);
+}
+
+/* Subtle scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--stone);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--stone-dark);
+}
+
+/* Smooth section transitions */
+section {
+  position: relative;
+}
+
+/* Glass effect for special elements */
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Polaroid photo style */
+.polaroid {
+  background: linear-gradient(145deg, #fefefe 0%, #f8f8f8 100%);
+  padding: 16px 16px 16px 16px;
+  box-shadow:
+    0 4px 6px rgba(0, 0, 0, 0.07),
+    0 10px 30px rgba(0, 0, 0, 0.12),
+    0 1px 2px rgba(0, 0, 0, 0.06),
+    inset 0 0 0 1px rgba(0,0,0,0.02);
+  transform: rotate(-2deg);
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+  position: relative;
+  border-radius: 2px;
+}
+
+.polaroid:hover {
+  transform: rotate(0deg) scale(1.02);
+  box-shadow:
+    0 8px 16px rgba(0, 0, 0, 0.1),
+    0 25px 50px rgba(0, 0, 0, 0.15);
+}
+
+/* Tape effect */
+.polaroid::before {
+  content: '';
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%) rotate(1deg);
+  width: 80px;
+  height: 28px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 253, 240, 0.9) 0%,
+    rgba(255, 250, 230, 0.85) 50%,
+    rgba(245, 240, 220, 0.8) 100%
+  );
+  border-radius: 1px;
+  box-shadow:
+    0 1px 2px rgba(0,0,0,0.08),
+    inset 0 0 0 1px rgba(0,0,0,0.03);
+  z-index: 10;
+}
+
+/* Subtle texture overlay */
+.polaroid::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23noise)'/%3E%3C/svg%3E");
+  opacity: 0.015;
+  pointer-events: none;
+  border-radius: 2px;
+}
+
+.polaroid-caption {
+  position: absolute;
+  bottom: 8px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: var(--font-caveat), 'Comic Sans MS', cursive;
+  font-size: 1.5rem;
+  color: #444;
+}
+
+.polaroid-date {
+  font-family: var(--font-caveat), 'Comic Sans MS', cursive;
+  font-size: 1rem;
+  color: #888;
+}
+
+/* Handwritten style text */
+.handwritten {
+  font-family: var(--font-caveat), 'Comic Sans MS', cursive;
+}
