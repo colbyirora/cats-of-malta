@@ -59,11 +59,37 @@ const patrickHand = Patrick_Hand({
 
 export const metadata: Metadata = {
   title: "Cats of Malta | Celebrating Malta's Street Cats",
-  description: "A visual storytelling project celebrating the iconic street cats of Malta. Browse, name, and support the feline friends of the Mediterranean.",
+  description: "Discover the charming street cats of Malta! Browse photos, suggest names, vote for your favourites, and join a community celebrating the Mediterranean's most iconic feline residents.",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: "/apple-touch-icon.png",
+  },
   openGraph: {
     title: "Cats of Malta",
-    description: "Celebrating Malta's iconic street cats through photography and community",
+    description: "Meet the street cats of Malta! Browse adorable photos, help name unnamed cats, and vote for your favourites. A community-driven project celebrating the Mediterranean's most lovable feline residents.",
     type: "website",
+    url: "https://catsofmalta.netlify.app",
+    siteName: "Cats of Malta",
+    images: [
+      {
+        url: "/logo.png",
+        width: 633,
+        height: 950,
+        alt: "Cats of Malta - A kawaii cat with glasses and a red scarf",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary",
+    title: "Cats of Malta",
+    description: "Meet the street cats of Malta! Browse photos, name cats, and vote for your favourites.",
+    images: ["/logo.png"],
   },
 };
 
