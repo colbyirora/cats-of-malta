@@ -23,7 +23,6 @@ async function getCat(id: string): Promise<Cat | null> {
       .single();
 
     if (error || !data) {
-      // Fallback to sample data
       return sampleCats.find((c) => c.id === id) || null;
     }
 
@@ -75,160 +74,260 @@ export default async function CatDetailPage({ params }: PageProps) {
   const stamp = getStamp(cat.id);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[var(--warm-white)] to-[var(--cream)]">
+    <div
+      className="min-h-screen"
+      style={{
+        backgroundColor: '#FFF9F0',
+        backgroundImage:
+          'radial-gradient(circle at 10% 20%, #E8927C15 2px, transparent 2.5px), radial-gradient(circle at 90% 80%, #7AAFB515 2px, transparent 2.5px), radial-gradient(circle at 50% 50%, #E8927C10 4px, transparent 4.5px)',
+        backgroundSize: '100px 100px, 120px 120px, 200px 200px',
+      }}
+    >
       <Header />
 
-      <main className="max-w-5xl mx-auto px-4 pt-8 pb-48">
+      <main className="max-w-[900px] mx-auto px-4 sm:px-6 pt-6 sm:pt-8 pb-32 relative">
+        {/* Floating sparkle decorations */}
+        <div className="absolute top-4 left-[10%] text-[#E8927C] text-2xl opacity-60 z-0" style={{ animation: 'cat-detail-float 3s ease-in-out infinite' }}>
+          &#x2728;
+        </div>
+        <div className="absolute bottom-[10%] -right-2 sm:right-0 text-[#7AAFB5] text-2xl opacity-60 z-0" style={{ animation: 'cat-detail-float 3s ease-in-out infinite 1s' }}>
+          &#x2726;
+        </div>
+        <div className="absolute top-[40%] -left-2 sm:left-0 text-[#E8927C] text-lg opacity-60 z-0" style={{ animation: 'cat-detail-float 3s ease-in-out infinite 2s' }}>
+          &#x2605;
+        </div>
+
         {/* Back button */}
         <Link
           href="/#gallery"
-          className="inline-flex items-center gap-2 text-[var(--terracotta)] hover:text-[var(--terracotta-dark)] transition-colors mb-8 group"
+          className="inline-flex items-center gap-2 mb-6 sm:mb-8 group transition-colors"
+          style={{ color: '#E8927C', fontFamily: 'var(--font-fredoka), sans-serif' }}
         >
-          <span className="group-hover:-translate-x-1 transition-transform">←</span> Back to all cats
+          <span className="group-hover:-translate-x-1 transition-transform text-lg">&larr;</span>
+          <span className="group-hover:underline">Back to all cats</span>
         </Link>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
-          {/* Polaroid Photo */}
-          <div className="flex justify-center lg:justify-end pt-4 sm:pt-8">
-            <div className="group -rotate-2 hover:rotate-0 transition-transform duration-300">
+        {/* Main 2-column grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-8 lg:gap-10 relative z-10">
+          {/* Photo Section */}
+          <div className="flex flex-col items-center">
+            {/* Polaroid Frame */}
+            <div
+              className="group bg-white p-4 sm:p-5 pb-16 sm:pb-[60px] relative w-full max-w-[350px] cursor-pointer"
+              style={{
+                boxShadow: '0 8px 0 rgba(232, 146, 124, 0.2), 0 12px 24px rgba(139, 129, 120, 0.15)',
+                borderRadius: '4px',
+                transform: 'rotate(-2deg)',
+                transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+              }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.transform = 'rotate(0deg) scale(1.02)'; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.transform = 'rotate(-2deg)'; }}
+            >
+              {/* Teal tape */}
               <div
-                className="relative p-2 sm:p-4 pb-16 sm:pb-20 shadow-[0_4px_6px_rgba(0,0,0,0.1),0_10px_30px_rgba(0,0,0,0.15)] group-hover:shadow-[0_8px_16px_rgba(0,0,0,0.12),0_20px_40px_rgba(0,0,0,0.18)] transition-shadow duration-300 group-hover:scale-[1.02] border-[2px] sm:border-[3px] border-[#f5f0e8]"
-                style={{ background: 'linear-gradient(145deg, #fffdf9 0%, #f9f5ee 50%, #f5f0e6 100%)' }}
+                className="absolute -top-[15px] left-1/2 -translate-x-1/2 w-[100px] sm:w-[120px] h-[30px] sm:h-[35px] z-10"
+                style={{
+                  backgroundColor: '#7AAFB5',
+                  opacity: 0.7,
+                  transform: 'translateX(-50%) rotate(2deg)',
+                  borderLeft: '2px dashed rgba(255,255,255,0.3)',
+                  borderRight: '2px dashed rgba(255,255,255,0.3)',
+                  maskImage: 'linear-gradient(to right, transparent 2%, black 5%, black 95%, transparent 98%)',
+                  WebkitMaskImage: 'linear-gradient(to right, transparent 2%, black 5%, black 95%, transparent 98%)',
+                }}
+              />
+
+              {/* Malta stamp - top right (KEPT!) */}
+              <div
+                className="absolute -top-3 -right-3 sm:-top-6 sm:-right-6 z-20 w-14 h-[70px] sm:w-[90px] sm:h-[112px]"
+                style={{ transform: 'rotate(8deg)' }}
               >
-                {/* Tape effect */}
-                <div className="absolute -top-2.5 sm:-top-3.5 left-1/2 -translate-x-1/2 w-14 sm:w-20 h-5 sm:h-7 rounded-sm z-10 rotate-1 bg-gradient-to-b from-amber-50/95 to-amber-100/90 shadow-sm" />
-
-                {/* Location label - top left */}
-                <div
-                  className="absolute -top-1 -left-1 z-20 px-2 sm:px-3 py-0.5 sm:py-1 rounded-sm shadow-sm"
-                  style={{ transform: 'rotate(-3deg)', background: 'linear-gradient(135deg, #fffdf9 0%, #f5f0e6 100%)' }}
-                >
-                  <p className="text-[8px] sm:text-[10px] font-bold text-[var(--terracotta)] tracking-wider" style={{ fontFamily: 'var(--font-playfair), serif' }}>
-                    {cat.location_name.toUpperCase()}
-                  </p>
-                </div>
-
-                {/* Malta stamp - top right */}
-                <div
-                  className="absolute -top-3 -right-3 sm:-top-6 sm:-right-6 z-20 w-14 h-[70px] sm:w-[90px] sm:h-[112px]"
-                  style={{ transform: 'rotate(8deg)' }}
-                >
-                  <Image
-                    src={stamp}
-                    alt="Malta stamp"
-                    fill
-                    className="object-contain drop-shadow-md"
-                    sizes="(max-width: 640px) 56px, 90px"
-                  />
-                </div>
-
-                {/* Photo */}
-                <div className="relative w-56 h-56 sm:w-72 sm:h-72 md:w-80 md:h-80 overflow-hidden bg-gray-100">
-                  <Image
-                    src={cat.primary_photo}
-                    alt={cat.name || 'Cat photo'}
-                    fill
-                    className="object-cover sepia-[0.08]"
-                    sizes="320px"
-                    priority
-                  />
-                </div>
-
-                {/* Polaroid caption area */}
-                <div
-                  className="absolute bottom-0 left-0 right-0 px-2 sm:px-4 py-2 sm:py-3 text-center"
-                  style={{ background: 'linear-gradient(180deg, #f9f5ee 0%, #f5f0e6 100%)' }}
-                >
-                  <p
-                    className="text-2xl sm:text-3xl text-gray-700 mb-0.5"
-                    style={{ fontFamily: 'var(--font-caveat), cursive' }}
-                  >
-                    {cat.name || '???'}
-                  </p>
-                  <p
-                    className="text-xs sm:text-sm text-gray-400"
-                    style={{ fontFamily: 'var(--font-caveat), cursive' }}
-                  >
-                    First spotted: {getFirstSpottedDate(cat.id)}
-                  </p>
-                </div>
+                <Image
+                  src={stamp}
+                  alt="Malta stamp"
+                  fill
+                  className="object-contain drop-shadow-md"
+                  sizes="(max-width: 640px) 56px, 90px"
+                />
               </div>
+
+              {/* Cat photo */}
+              <div className="relative w-full aspect-square overflow-hidden bg-gray-100" style={{ borderRadius: '2px', border: '2px solid #f0f0f0' }}>
+                <Image
+                  src={cat.primary_photo}
+                  alt={cat.name || 'Cat photo'}
+                  fill
+                  className="object-cover"
+                  style={{ filter: 'contrast(1.05) saturate(1.1)' }}
+                  sizes="350px"
+                  priority
+                />
+              </div>
+
+              {/* Polaroid caption */}
+              <div
+                className="absolute bottom-0 left-0 right-0 text-center py-3 sm:py-4"
+                style={{ fontFamily: 'var(--font-fredoka), sans-serif' }}
+              >
+                <p className="text-xl sm:text-2xl text-[#2D2D2D]" style={{ transform: 'rotate(1deg)' }}>
+                  {cat.name || '???'}
+                </p>
+              </div>
+            </div>
+
+            {/* Spotted date pill */}
+            <div
+              className="mt-4 inline-block px-4 py-1.5 text-sm"
+              style={{
+                color: '#8B8178',
+                backgroundColor: '#F5E6D3',
+                borderRadius: '20px',
+                border: '2px dotted #8B8178',
+              }}
+            >
+              First spotted: {getFirstSpottedDate(cat.id)}
             </div>
           </div>
 
-          {/* Cat info */}
-          <div className="lg:pt-8">
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-6">
-              <div>
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[var(--foreground)] mb-2">
-                  {cat.name || '??? (Help name me!)'}
-                </h1>
-                <p className="text-sm sm:text-base text-[var(--stone-dark)] flex items-center gap-2">
-                  <span>📍</span> {cat.location_name}
-                </p>
+          {/* Info Section */}
+          <div className="flex flex-col gap-5 sm:gap-6">
+            {/* Header */}
+            <div>
+              <h1
+                className="relative inline-block text-3xl sm:text-[42px] font-bold leading-tight mb-2"
+                style={{ color: '#2D2D2D', fontFamily: 'var(--font-fraunces), serif' }}
+              >
+                {cat.name || '??? (Help name me!)'}
+                {/* Coral highlight underline */}
+                <span
+                  className="absolute bottom-1 -left-1 -right-1 h-3 -z-10"
+                  style={{ background: '#E8927C', opacity: 0.3, borderRadius: '4px', transform: 'rotate(-1deg)' }}
+                />
+              </h1>
+              <div className="flex items-center gap-2 text-lg" style={{ color: '#7AAFB5', fontFamily: 'var(--font-fredoka), sans-serif' }}>
+                <span>&#x1F4CD;</span> {cat.location_name}
               </div>
-              {cat.is_stray ? (
-                <span className="bg-[var(--stone)]/50 text-[var(--foreground)] px-4 py-1.5 rounded-full text-sm font-medium">
-                  Street Cat
-                </span>
-              ) : (
-                <span className="bg-[var(--sea-blue)]/15 text-[var(--sea-blue)] px-4 py-1.5 rounded-full text-sm font-medium">
-                  Has Home
-                </span>
-              )}
             </div>
 
-            {/* Quick facts */}
-            <div className="flex flex-wrap gap-2 sm:gap-3 mb-6 sm:mb-8">
-              <span className="bg-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm shadow-sm">
-                🎨 {cat.color}
-              </span>
+            {/* Chip grid */}
+            <div className="flex flex-wrap gap-3">
+              <div
+                className="flex items-center gap-1.5 px-4 py-2 bg-white text-[15px] font-medium transition-all hover:-translate-y-0.5"
+                style={{ border: '2px solid #F5E6D3', borderRadius: '16px', color: '#8B8178' }}
+              >
+                &#x1F43E; {cat.is_stray ? 'Street Cat' : 'Has Home'}
+              </div>
+              <div
+                className="flex items-center gap-1.5 px-4 py-2 bg-white text-[15px] font-medium transition-all hover:-translate-y-0.5"
+                style={{ border: '2px solid #F5E6D3', borderRadius: '16px', color: '#8B8178' }}
+              >
+                &#x1F3A8; {cat.color}
+              </div>
               {cat.breed && (
-                <span className="bg-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm shadow-sm">
-                  🐱 {cat.breed}
-                </span>
+                <div
+                  className="flex items-center gap-1.5 px-4 py-2 bg-white text-[15px] font-medium transition-all hover:-translate-y-0.5"
+                  style={{ border: '2px solid #F5E6D3', borderRadius: '16px', color: '#8B8178' }}
+                >
+                  &#x1F431; {cat.breed}
+                </div>
               )}
               {cat.age && (
-                <span className="bg-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm shadow-sm">
-                  📅 {cat.age}
-                </span>
+                <div
+                  className="flex items-center gap-1.5 px-4 py-2 bg-white text-[15px] font-medium transition-all hover:-translate-y-0.5"
+                  style={{ border: '2px solid #F5E6D3', borderRadius: '16px', color: '#8B8178' }}
+                >
+                  &#x1F4C5; {cat.age}
+                </div>
               )}
             </div>
 
-            {/* Story */}
+            {/* Story card */}
             {cat.background_story && (
-              <div className="mb-8 soft-card p-6 bg-white/80">
-                <h2 className="text-lg font-bold text-[var(--foreground)] mb-3 flex items-center gap-2">
-                  <span>📖</span> Their Story
-                </h2>
-                <p className="text-[var(--stone-dark)] leading-relaxed">{cat.background_story}</p>
+              <div
+                className="bg-white p-5 sm:p-6"
+                style={{ borderRadius: '24px', border: '3px dotted #F5E6D3' }}
+              >
+                <h3
+                  className="flex items-center gap-2 text-lg mb-3"
+                  style={{ color: '#E8927C', fontFamily: 'var(--font-fredoka), sans-serif' }}
+                >
+                  &#x1F4D6; Their Story
+                </h3>
+                <p className="leading-relaxed text-base" style={{ color: '#2D2D2D' }}>
+                  {cat.background_story}
+                </p>
               </div>
             )}
 
-            {/* Share buttons */}
-            <div className="flex justify-center gap-3 sm:gap-4">
-              <button className="group px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl text-sm sm:text-base font-medium transition-all duration-300 bg-[var(--cream)] text-[var(--malta-blue)] border-2 border-[var(--malta-blue)] hover:bg-[var(--malta-blue)] hover:text-white">
-                <span className="flex items-center gap-2">Share <span className="group-hover:rotate-12 transition-transform">📤</span></span>
+            {/* Action buttons */}
+            <div className="flex gap-4">
+              <button
+                className="flex items-center gap-2 px-6 sm:px-7 py-3 sm:py-3.5 border-none text-white text-lg font-semibold cursor-pointer"
+                style={{
+                  fontFamily: 'var(--font-fredoka), sans-serif',
+                  background: '#E8927C',
+                  borderRadius: '50px',
+                  boxShadow: '0 4px 0 #D0806C, 0 8px 10px rgba(0,0,0,0.1)',
+                  transition: 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-2px)';
+                  (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 6px 0 #D0806C, 0 12px 14px rgba(0,0,0,0.1)';
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(0)';
+                  (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 0 #D0806C, 0 8px 10px rgba(0,0,0,0.1)';
+                }}
+              >
+                <span>&#x2764;&#xFE0F;</span> Favorite
               </button>
-              <button className="group px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl text-sm sm:text-base font-medium transition-all duration-300 bg-[var(--terracotta)] text-white hover:bg-[var(--terracotta-dark)] shadow-md hover:shadow-lg">
-                <span className="flex items-center gap-2"><span className="group-hover:scale-125 transition-transform">❤️</span> Favorite</span>
+              <button
+                className="flex items-center gap-2 px-6 sm:px-7 py-3 sm:py-3.5 text-lg font-semibold cursor-pointer bg-white"
+                style={{
+                  fontFamily: 'var(--font-fredoka), sans-serif',
+                  color: '#E8927C',
+                  border: '2px solid #E8927C',
+                  borderRadius: '50px',
+                  boxShadow: '0 4px 0 #F5E6D3',
+                  transition: 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-2px)';
+                  (e.currentTarget as HTMLButtonElement).style.background = '#FFF9F0';
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(0)';
+                  (e.currentTarget as HTMLButtonElement).style.background = 'white';
+                }}
+              >
+                <span>&#x1F4E4;</span> Share
               </button>
             </div>
           </div>
         </div>
 
-        {/* Voting section */}
+        {/* Voting section — spans full width */}
         {(cat.voting_status === 'suggesting' || cat.voting_status === 'voting') && (
           <VotingSection cat={cat} suggestions={suggestions} />
         )}
 
         {/* Named cat - show winning name stats */}
         {cat.voting_status === 'complete' && cat.name && (
-          <div className="mt-8 bg-[var(--golden-sun)]/10 soft-card p-8 text-center">
-            <h2 className="text-2xl font-bold text-[var(--golden-sun)] mb-2">
-              🏆 Community Named: {cat.name}
+          <div
+            className="mt-8 sm:mt-10 p-6 sm:p-8 text-center bg-white"
+            style={{
+              borderRadius: '24px',
+              border: '3px dotted #f5b642',
+              boxShadow: '0 8px 0 rgba(245, 182, 66, 0.15), 0 12px 24px rgba(139, 129, 120, 0.1)',
+            }}
+          >
+            <h2
+              className="text-2xl font-bold mb-2"
+              style={{ color: '#f5b642', fontFamily: 'var(--font-fredoka), sans-serif' }}
+            >
+              &#x1F3C6; Community Named: {cat.name}
             </h2>
-            <p className="text-[var(--stone-dark)]">
+            <p style={{ color: '#8B8178' }}>
               This cat was named by the Cats of Malta community!
             </p>
           </div>

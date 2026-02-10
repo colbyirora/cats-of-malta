@@ -229,6 +229,12 @@ body {
   animation: cat-blink 4s infinite;
 }
 
+/* Cat detail page sparkle float */
+@keyframes cat-detail-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(10deg); }
+}
+
 @keyframes heart-rise {
   0% {
     opacity: 0;

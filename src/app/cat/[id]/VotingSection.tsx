@@ -23,7 +23,6 @@ export default function VotingSection({ cat, suggestions }: VotingSectionProps) 
   const [voting, setVoting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
-  // Check localStorage for previous actions
   const [alreadySuggested, setAlreadySuggested] = useState(false);
   const [alreadyVoted, setAlreadyVoted] = useState<string | null>(null);
 
@@ -44,7 +43,7 @@ export default function VotingSection({ cat, suggestions }: VotingSectionProps) 
         setLocalSuggestions(data.suggestions);
       }
     } catch {
-      // Silently fail on re-fetch; keep existing local state
+      // keep existing local state
     }
   }
 
@@ -69,12 +68,9 @@ export default function VotingSection({ cat, suggestions }: VotingSectionProps) 
         return;
       }
 
-      // Mark as suggested in localStorage
       localStorage.setItem(`suggested_${cat.id}`, 'true');
       setAlreadySuggested(true);
       setNewSuggestion('');
-
-      // Re-fetch suggestions to show the updated list
       await fetchSuggestions();
     } catch {
       setErrorMsg('Network error. Please try again.');
@@ -111,11 +107,8 @@ export default function VotingSection({ cat, suggestions }: VotingSectionProps) 
         return;
       }
 
-      // Mark as voted in localStorage
       localStorage.setItem(`voted_${cat.id}`, suggestionId);
       setAlreadyVoted(suggestionId);
-
-      // Re-fetch suggestions to show updated vote counts
       await fetchSuggestions();
     } catch {
       setErrorMsg('Network error. Please try again.');
@@ -125,132 +118,248 @@ export default function VotingSection({ cat, suggestions }: VotingSectionProps) 
   };
 
   return (
-    <div className="mt-8 soft-card p-8 bg-[var(--cream)]">
+    <div className="mt-8 sm:mt-10">
       {/* Error message */}
       {errorMsg && (
-        <div className="mb-4 p-3 rounded-xl bg-red-50 text-red-700 text-sm text-center">
+        <div
+          className="mb-4 p-3 text-sm text-center"
+          style={{ background: '#FFF0EB', color: '#D0806C', borderRadius: '16px', border: '2px solid #E8927C' }}
+        >
           {errorMsg}
         </div>
       )}
 
       {cat.voting_status === 'suggesting' ? (
-        <>
-          <div className="text-center mb-6">
-            <span className="inline-block bg-[var(--golden-sun)] text-white px-4 py-1 rounded-full text-sm font-bold mb-2">
-              Suggestion Phase
-            </span>
-            <h2 className="text-2xl font-bold text-[var(--terracotta-dark)]">
-              Help name this cat!
-            </h2>
-            <p className="text-[var(--stone-dark)]">
-              Submit your name suggestion. Voting begins next week!
-            </p>
-          </div>
+        /* ── SUGGESTION PHASE ── */
+        <div
+          className="p-5 sm:p-[30px] flex justify-center"
+          style={{
+            borderRadius: '20px',
+            background: '#FFF0EB',
+            backgroundImage:
+              'radial-gradient(#E8927C 15%, transparent 16%), radial-gradient(#E8927C 15%, transparent 16%)',
+            backgroundSize: '20px 20px',
+            backgroundPosition: '0 0, 10px 10px',
+          }}
+        >
+          <div
+            className="bg-white w-full flex flex-col md:flex-row items-center md:items-center justify-between gap-5 relative overflow-hidden p-5 sm:p-6"
+            style={{
+              borderRadius: '16px',
+              boxShadow: '0 4px 12px rgba(232, 146, 124, 0.15)',
+              border: '2px solid #E8927C',
+            }}
+          >
+            {/* Pencil watermark */}
+            <div
+              className="absolute -top-2.5 -right-2.5 text-[80px] opacity-50 pointer-events-none"
+              style={{ color: '#F5E6D3', transform: 'rotate(15deg)' }}
+            >
+              &#x270E;
+            </div>
 
-          {/* Suggestion form */}
-          <form onSubmit={handleSuggest} className="max-w-md mx-auto mb-6">
-            <div className="flex gap-3">
+            <div className="z-10 text-center md:text-left">
+              <h3
+                className="flex items-center gap-2 text-xl mb-1 flex-wrap justify-center md:justify-start"
+                style={{ color: '#2D2D2D', fontFamily: 'var(--font-fredoka), sans-serif' }}
+              >
+                &#x1F4A1; Suggestion Phase
+                <span
+                  className="text-xs px-2 py-0.5 text-white"
+                  style={{ background: '#E8927C', borderRadius: '10px' }}
+                >
+                  ACTIVE
+                </span>
+              </h3>
+              <p className="text-[15px]" style={{ color: '#8B8178' }}>
+                Help name this cat! Submit your name suggestion.
+              </p>
+            </div>
+
+            <form onSubmit={handleSuggest} className="z-10 flex gap-2.5 w-full md:w-auto">
               <input
                 type="text"
                 value={newSuggestion}
                 onChange={(e) => setNewSuggestion(e.target.value)}
-                placeholder="Enter a name..."
+                placeholder="Type a name..."
                 maxLength={30}
-                className="flex-1 px-5 py-3 rounded-full soft-input"
                 disabled={alreadySuggested || submitting}
+                className="flex-1 md:w-auto px-5 py-2.5 outline-none transition-colors"
+                style={{
+                  border: '2px solid #F5E6D3',
+                  borderRadius: '50px',
+                  color: '#2D2D2D',
+                  fontFamily: 'inherit',
+                }}
+                onFocus={(e) => { (e.currentTarget as HTMLInputElement).style.borderColor = '#7AAFB5'; }}
+                onBlur={(e) => { (e.currentTarget as HTMLInputElement).style.borderColor = '#F5E6D3'; }}
               />
               <button
                 type="submit"
                 disabled={!newSuggestion.trim() || alreadySuggested || submitting}
-                className="soft-button px-6 py-3 disabled:opacity-50"
+                className="px-5 py-2.5 border-none text-white text-sm font-semibold cursor-pointer disabled:opacity-50"
+                style={{
+                  fontFamily: 'var(--font-fredoka), sans-serif',
+                  background: '#E8927C',
+                  borderRadius: '50px',
+                  boxShadow: '0 4px 0 #D0806C, 0 8px 10px rgba(0,0,0,0.1)',
+                  transition: 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                }}
               >
-                {submitting ? 'Submitting...' : alreadySuggested ? 'Submitted!' : 'Suggest'}
+                {submitting ? 'Sending...' : alreadySuggested ? 'Submitted!' : 'Submit'}
               </button>
-            </div>
-          </form>
-
-          {/* Current suggestions */}
-          {localSuggestions.length > 0 && (
-            <div>
-              <h3 className="font-bold text-[var(--foreground)] mb-3">Current Suggestions:</h3>
-              <div className="flex flex-wrap gap-2">
-                {localSuggestions.map((s) => (
-                  <span
-                    key={s.id}
-                    className="bg-white px-4 py-2 rounded-full text-sm shadow-sm"
-                  >
-                    {s.suggested_name}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-        </>
+            </form>
+          </div>
+        </div>
       ) : (
-        <>
-          <div className="text-center mb-6">
-            <span className="inline-block bg-[var(--malta-blue)] text-white px-4 py-1 rounded-full text-sm font-bold mb-2">
-              Voting Phase
-            </span>
-            <h2 className="text-2xl font-bold text-[var(--terracotta-dark)]">
-              Vote for a name!
-            </h2>
-            <p className="text-[var(--stone-dark)]">
-              Choose your favorite name. One vote per person.
-            </p>
+        /* ── VOTING PHASE ── */
+        <div
+          className="p-5 sm:p-[30px]"
+          style={{
+            borderRadius: '20px',
+            background: '#EBF5F7',
+            backgroundImage:
+              'radial-gradient(#7AAFB5 15%, transparent 16%), radial-gradient(#7AAFB5 15%, transparent 16%)',
+            backgroundSize: '20px 20px',
+            backgroundPosition: '0 0, 10px 10px',
+          }}
+        >
+          <div
+            className="bg-white w-full p-5 sm:p-6 relative overflow-hidden"
+            style={{
+              borderRadius: '16px',
+              boxShadow: '0 4px 12px rgba(122, 175, 181, 0.15)',
+              border: '2px solid #7AAFB5',
+            }}
+          >
+            {/* Ballot watermark */}
+            <div
+              className="absolute -top-2 -right-2 text-[70px] opacity-40 pointer-events-none"
+              style={{ color: '#F5E6D3', transform: 'rotate(15deg)' }}
+            >
+              &#x2718;
+            </div>
+
+            <div className="text-center mb-5 z-10 relative">
+              <h3
+                className="flex items-center gap-2 text-xl mb-1 justify-center"
+                style={{ color: '#2D2D2D', fontFamily: 'var(--font-fredoka), sans-serif' }}
+              >
+                &#x1F5F3;&#xFE0F; Vote for a name!
+                <span
+                  className="text-xs px-2 py-0.5 text-white"
+                  style={{ background: '#7AAFB5', borderRadius: '10px' }}
+                >
+                  LIVE
+                </span>
+              </h3>
+              <p className="text-[15px]" style={{ color: '#8B8178' }}>
+                Choose your favorite name. One vote per person.
+              </p>
+            </div>
+
+            {/* Already voted message */}
+            {alreadyVoted && (
+              <p className="text-center mb-4 text-sm" style={{ color: '#7AAFB5' }}>
+                Thanks for voting! Results will be announced at the end of the voting period.
+              </p>
+            )}
+
+            {/* Voting options */}
+            <div className="space-y-3 max-w-md mx-auto relative z-10">
+              {localSuggestions
+                .sort((a, b) => b.vote_count - a.vote_count)
+                .map((s) => {
+                  const percentage = totalVotes > 0 ? (s.vote_count / totalVotes) * 100 : 0;
+                  const isVoted = alreadyVoted === s.id;
+
+                  return (
+                    <button
+                      key={s.id}
+                      onClick={() => handleVote(s.id)}
+                      disabled={!!alreadyVoted || voting}
+                      className="w-full p-4 text-left relative overflow-hidden"
+                      style={{
+                        borderRadius: '16px',
+                        border: isVoted ? '2px solid #7AAFB5' : '2px solid #F5E6D3',
+                        background: isVoted ? '#EBF5F7' : alreadyVoted ? 'rgba(255,255,255,0.5)' : 'white',
+                        opacity: alreadyVoted && !isVoted ? 0.6 : 1,
+                        cursor: alreadyVoted ? 'default' : 'pointer',
+                        transition: 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                        boxShadow: isVoted ? '0 4px 12px rgba(122, 175, 181, 0.2)' : 'none',
+                        transform: 'translateY(0)',
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!alreadyVoted) {
+                          (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-2px)';
+                          (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 6px 16px rgba(139, 129, 120, 0.15)';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!alreadyVoted) {
+                          (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(0)';
+                          (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
+                        }
+                      }}
+                    >
+                      {/* Vote percentage bar */}
+                      <div
+                        className="absolute inset-0 transition-all duration-500"
+                        style={{
+                          width: `${percentage}%`,
+                          background: isVoted ? 'rgba(122, 175, 181, 0.15)' : 'rgba(232, 146, 124, 0.1)',
+                          borderRadius: '16px',
+                        }}
+                      />
+
+                      <div className="relative flex justify-between items-center">
+                        <span className="font-medium" style={{ color: '#2D2D2D', fontFamily: 'var(--font-fredoka), sans-serif' }}>
+                          {s.suggested_name}
+                        </span>
+                        <span className="text-sm" style={{ color: '#8B8178' }}>
+                          {s.vote_count} vote{s.vote_count !== 1 ? 's' : ''} ({percentage.toFixed(0)}%)
+                        </span>
+                      </div>
+
+                      {isVoted && (
+                        <span className="relative text-xs mt-1 block" style={{ color: '#7AAFB5' }}>
+                          &#x2713; Your vote
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+            </div>
           </div>
+        </div>
+      )}
 
-          {/* Already voted message */}
-          {alreadyVoted && (
-            <p className="text-center mb-4 text-[var(--stone-dark)] text-sm">
-              Thanks for voting! Results will be announced at the end of the voting period.
-            </p>
-          )}
-
-          {/* Voting options */}
-          <div className="space-y-3 max-w-md mx-auto">
-            {localSuggestions
-              .sort((a, b) => b.vote_count - a.vote_count)
-              .map((s) => {
-                const percentage = totalVotes > 0 ? (s.vote_count / totalVotes) * 100 : 0;
-                const isVoted = alreadyVoted === s.id;
-
-                return (
-                  <button
-                    key={s.id}
-                    onClick={() => handleVote(s.id)}
-                    disabled={!!alreadyVoted || voting}
-                    className={`w-full p-4 rounded-2xl text-left transition-all duration-300 relative overflow-hidden ${
-                      isVoted
-                        ? 'bg-[var(--terracotta)]/10 shadow-md'
-                        : alreadyVoted
-                        ? 'bg-white/50 opacity-60'
-                        : 'bg-white hover:shadow-md hover:scale-[1.02]'
-                    }`}
-                  >
-                    {/* Vote percentage bar */}
-                    <div
-                      className="absolute inset-0 bg-[var(--terracotta)]/15 transition-all duration-500 rounded-2xl"
-                      style={{ width: `${percentage}%` }}
-                    />
-
-                    <div className="relative flex justify-between items-center">
-                      <span className="font-medium">{s.suggested_name}</span>
-                      <span className="text-sm text-[var(--stone-dark)]">
-                        {s.vote_count} vote{s.vote_count !== 1 ? 's' : ''} ({percentage.toFixed(0)}%)
-                      </span>
-                    </div>
-
-                    {isVoted && (
-                      <span className="relative text-xs text-[var(--terracotta)] mt-1 block">
-                        Your vote
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
+      {/* Current suggestions list (shown during suggestion phase) */}
+      {cat.voting_status === 'suggesting' && localSuggestions.length > 0 && (
+        <div className="mt-5">
+          <h3
+            className="font-bold mb-3 text-base"
+            style={{ color: '#2D2D2D', fontFamily: 'var(--font-fredoka), sans-serif' }}
+          >
+            Current Suggestions:
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {localSuggestions.map((s) => (
+              <span
+                key={s.id}
+                className="bg-white px-4 py-2 text-sm font-medium"
+                style={{
+                  border: '2px solid #F5E6D3',
+                  borderRadius: '50px',
+                  color: '#8B8178',
+                  boxShadow: '0 2px 6px rgba(139, 129, 120, 0.1)',
+                }}
+              >
+                {s.suggested_name}
+              </span>
+            ))}
           </div>
-        </>
+        </div>
       )}
     </div>
   );
