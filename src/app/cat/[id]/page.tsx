@@ -3,22 +3,59 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { sampleCats, sampleNameSuggestions } from '@/lib/sample-data';
+import { supabase } from '@/lib/supabase';
+import { sampleCats } from '@/lib/sample-data';
+import type { Cat, NameSuggestion } from '@/lib/types';
 import VotingSection from './VotingSection';
+
+export const revalidate = 60;
 
 interface PageProps {
   params: Promise<{ id: string }>;
 }
 
+async function getCat(id: string): Promise<Cat | null> {
+  try {
+    const { data, error } = await supabase
+      .from('cats')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error || !data) {
+      // Fallback to sample data
+      return sampleCats.find((c) => c.id === id) || null;
+    }
+
+    return data;
+  } catch {
+    return sampleCats.find((c) => c.id === id) || null;
+  }
+}
+
+async function getSuggestions(catId: string): Promise<NameSuggestion[]> {
+  try {
+    const { data, error } = await supabase
+      .from('name_suggestions')
+      .select('*')
+      .eq('cat_id', catId)
+      .order('vote_count', { ascending: false });
+    if (error || !data) return [];
+    return data;
+  } catch {
+    return [];
+  }
+}
+
 export default async function CatDetailPage({ params }: PageProps) {
   const { id } = await params;
-  const cat = sampleCats.find((c) => c.id === id);
+  const cat = await getCat(id);
 
   if (!cat) {
     notFound();
   }
 
-  const suggestions = sampleNameSuggestions.filter((s) => s.cat_id === cat.id);
+  const suggestions = await getSuggestions(cat.id);
 
   // Generate a consistent "first spotted" date based on cat id
   const getFirstSpottedDate = (catId: string) => {

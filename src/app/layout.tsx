@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Caveat, Playfair_Display, Fraunces } from "next/font/google";
+import { Geist, Geist_Mono, Caveat, Playfair_Display, Fraunces, Fredoka, Gochi_Hand, Nunito, Mali, Patrick_Hand } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -27,6 +27,36 @@ const fraunces = Fraunces({
   subsets: ["latin"],
 });
 
+const fredoka = Fredoka({
+  variable: "--font-fredoka",
+  subsets: ["latin"],
+  weight: "700",
+});
+
+const gochiHand = Gochi_Hand({
+  variable: "--font-gochi-hand",
+  subsets: ["latin"],
+  weight: "400",
+});
+
+const nunito = Nunito({
+  variable: "--font-nunito",
+  subsets: ["latin"],
+  weight: "700",
+});
+
+const mali = Mali({
+  variable: "--font-mali",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+});
+
+const patrickHand = Patrick_Hand({
+  variable: "--font-patrick-hand",
+  subsets: ["latin"],
+  weight: "400",
+});
+
 export const metadata: Metadata = {
   title: "Cats of Malta | Celebrating Malta's Street Cats",
   description: "A visual storytelling project celebrating the iconic street cats of Malta. Browse, name, and support the feline friends of the Mediterranean.",
@@ -45,7 +75,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${caveat.variable} ${playfair.variable} ${fraunces.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${caveat.variable} ${playfair.variable} ${fraunces.variable} ${fredoka.variable} ${gochiHand.variable} ${nunito.variable} ${mali.variable} ${patrickHand.variable} antialiased`}
       >
         {children}
       </body>

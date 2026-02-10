@@ -166,6 +166,84 @@ body {
   animation: float 4s ease-in-out infinite;
 }
 
+/* Hero kawaii cat animations */
+@keyframes hero-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes hero-float-reverse {
+  0%, 100% { transform: translateY(-20px); }
+  50% { transform: translateY(0); }
+}
+
+@keyframes hero-float-fast {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(10deg); }
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(2deg); }
+  75% { transform: rotate(-2deg); }
+}
+
+@keyframes cat-breathe {
+  0%, 100% { transform: scaleY(1) scaleX(1); }
+  50% { transform: scaleY(0.95) scaleX(1.05); }
+}
+
+@keyframes cat-head-bob {
+  0%, 100% { transform: rotate(0deg) translateY(0); }
+  25% { transform: rotate(3deg) translateY(2px); }
+  75% { transform: rotate(-3deg) translateY(2px); }
+}
+
+@keyframes cat-tail-wag {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(15deg); }
+}
+
+@keyframes cat-blink {
+  0%, 96%, 100% { transform: scaleY(1); }
+  98% { transform: scaleY(0.1); }
+}
+
+#cat-body {
+  transform-origin: center bottom;
+  animation: cat-breathe 3s infinite ease-in-out;
+}
+
+#cat-tail {
+  transform-origin: 80% 80%;
+  animation: cat-tail-wag 2s infinite ease-in-out;
+}
+
+#cat-head {
+  transform-origin: center 60%;
+  animation: cat-head-bob 4s infinite ease-in-out;
+}
+
+#left-eye, #right-eye {
+  transform-origin: center;
+  animation: cat-blink 4s infinite;
+}
+
+@keyframes heart-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.5);
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(-5px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-40px) scale(0.6);
+  }
+}
+
 /* Cat silhouette animations */
 @keyframes sway {
   0%, 100% { transform: rotate(-2deg); }

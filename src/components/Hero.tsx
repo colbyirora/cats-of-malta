@@ -1,171 +1,338 @@
 'use client';
 
-import Image from 'next/image';
+import { useState, useCallback } from 'react';
 
-// Featured cat photos for the floating polaroids - positioned closer to center
-const floatingCats = [
-  { src: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=300', name: 'Marmalade', rotation: -6, top: '15%', left: '12%', delay: '0s', stamp: '/stamps/s1.png', location: 'Valletta' },
-  { src: 'https://images.unsplash.com/photo-1573865526739-10659fec78a5?w=300', name: 'Shadow', rotation: 4, top: '12%', right: '12%', delay: '1s', stamp: '/stamps/s2.png', location: 'Mdina' },
-  { src: 'https://images.unsplash.com/photo-1495360010541-f48722b34f7d?w=300', name: 'Luna', rotation: -3, bottom: '20%', left: '10%', delay: '2s', stamp: '/stamps/s3.png', location: 'Sliema' },
-  { src: 'https://images.unsplash.com/photo-1574158622682-e40e69881006?w=300', name: 'Cappuccino', rotation: 5, bottom: '18%', right: '10%', delay: '0.5s', stamp: '/stamps/s4.png', location: 'Rabat' },
-];
+interface Heart {
+  id: number;
+  x: number;
+  y: number;
+  dx: number;
+  size: number;
+  delay: number;
+}
+
+let heartCounter = 0;
 
 export default function Hero() {
+  const [isPetting, setIsPetting] = useState(false);
+  const [hearts, setHearts] = useState<Heart[]>([]);
+
+  const petCat = useCallback(() => {
+    if (isPetting) return;
+    setIsPetting(true);
+
+    // Spawn hearts from both cheeks
+    const newHearts: Heart[] = [];
+    const cheeks = [
+      { x: 60, y: 105 },  // left cheek
+      { x: 140, y: 105 }, // right cheek
+    ];
+
+    for (const cheek of cheeks) {
+      for (let i = 0; i < 3; i++) {
+        newHearts.push({
+          id: heartCounter++,
+          x: cheek.x + (Math.random() - 0.5) * 10,
+          y: cheek.y,
+          dx: (cheek.x < 100 ? -1 : 1) * (8 + Math.random() * 12),
+          size: 0.4 + Math.random() * 0.3,
+          delay: i * 0.15,
+        });
+      }
+    }
+
+    setHearts((prev) => [...prev, ...newHearts]);
+
+    // Reset after animation
+    setTimeout(() => {
+      setIsPetting(false);
+    }, 800);
+
+    // Clean up hearts after they fade
+    setTimeout(() => {
+      setHearts((prev) => prev.filter((h) => !newHearts.includes(h)));
+    }, 1500);
+  }, [isPetting]);
+
   return (
-    <section className="relative min-h-screen pb-32 flex items-center justify-center overflow-hidden bg-gradient-to-b from-[var(--warm-white)] via-[var(--cream)] to-[var(--terracotta-light)]/30 tile-pattern">
-      {/* Soft floating shapes in background */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-20 left-[10%] w-64 h-64 bg-[var(--terracotta-light)]/20 rounded-full blur-3xl float-animation" />
-        <div className="absolute top-40 right-[15%] w-48 h-48 bg-[var(--malta-blue-light)]/20 rounded-full blur-3xl float-animation" style={{ animationDelay: '1s' }} />
-        <div className="absolute bottom-32 left-[20%] w-56 h-56 bg-[var(--golden-sun)]/15 rounded-full blur-3xl float-animation" style={{ animationDelay: '2s' }} />
-      </div>
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[var(--warm-white)]">
+      {/* Background blobs */}
+      <div
+        className="absolute rounded-full opacity-60"
+        style={{
+          width: 400,
+          height: 400,
+          background: 'var(--stone)',
+          top: -100,
+          left: -100,
+          filter: 'blur(60px)',
+          animation: 'hero-float 10s infinite ease-in-out',
+        }}
+      />
+      <div
+        className="absolute rounded-full opacity-60"
+        style={{
+          width: 300,
+          height: 300,
+          background: 'rgba(196, 30, 58, 0.15)',
+          bottom: 50,
+          right: -50,
+          filter: 'blur(60px)',
+          animation: 'hero-float 12s infinite ease-in-out reverse',
+        }}
+      />
 
-      {/* Floating Polaroid Collage */}
-      <div className="absolute inset-0 pointer-events-none hidden md:block">
-        {floatingCats.map((cat, index) => (
-          <div
-            key={index}
-            className="absolute float-animation"
-            style={{
-              top: cat.top,
-              left: cat.left,
-              right: cat.right,
-              bottom: cat.bottom,
-              animationDelay: cat.delay,
-              zIndex: index,
-            }}
-          >
-            <div
-              className="relative p-2 shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-110 hover:z-20 pointer-events-auto cursor-pointer group border-[2px] border-[#f5f0e8]"
-              style={{ transform: `rotate(${cat.rotation}deg)`, background: 'linear-gradient(145deg, #fffdf9 0%, #f9f5ee 50%, #f5f0e6 100%)' }}
-            >
-              {/* Tape effect */}
-              <div
-                className="absolute -top-2 left-1/2 w-10 h-4 rounded-sm z-10 bg-gradient-to-b from-amber-50/90 to-amber-100/80 shadow-sm"
-                style={{ transform: `translateX(-50%) rotate(${-cat.rotation / 2}deg)` }}
-              />
+      <div className="relative z-10 w-full max-w-[1200px] min-h-[90vh] flex justify-center items-center flex-col px-6">
+        {/* Annotation: So fluffy */}
+        <div
+          className="absolute z-20 hidden md:block"
+          style={{
+            fontFamily: 'var(--font-gochi-hand), cursive',
+            fontSize: '1.5rem',
+            color: 'var(--terracotta)',
+            top: '25%',
+            left: '20%',
+            transform: 'rotate(-5deg)',
+          }}
+        >
+          So fluffy~
+        </div>
 
-              {/* Location label - top left */}
-              <div
-                className="absolute -top-1 -left-1 z-20 px-2 py-0.5 rounded-sm shadow-sm"
-                style={{ transform: 'rotate(-3deg)', background: 'linear-gradient(135deg, #fffdf9 0%, #f5f0e6 100%)' }}
+        {/* Title */}
+        <h1
+          className="relative z-10 text-center leading-tight pointer-events-none"
+          style={{
+            fontFamily: 'var(--font-fredoka), cursive',
+            fontSize: 'clamp(4rem, 10vw, 8rem)',
+            color: 'var(--terracotta)',
+            WebkitTextStroke: '12px white',
+            paintOrder: 'stroke fill',
+            filter: 'drop-shadow(4px 6px 0px rgba(0,0,0,0.1))',
+            transform: 'rotate(-2deg)',
+            marginBottom: -40,
+          }}
+        >
+          <span className="inline-block" style={{ animation: 'wiggle 4s infinite ease-in-out' }}>Cats</span>{' '}
+          <span className="inline-block" style={{ animation: 'wiggle 4s infinite ease-in-out 0.2s' }}>of</span>
+          <br />
+          <span className="inline-block" style={{ animation: 'wiggle 4s infinite ease-in-out 0.4s' }}>Malta</span>
+        </h1>
+
+        {/* Kawaii Cat SVG */}
+        <div
+          className="relative flex justify-center items-end cursor-pointer"
+          style={{
+            width: 400,
+            height: 400,
+            zIndex: 5,
+            filter: 'drop-shadow(0px 20px 30px rgba(139, 129, 120, 0.2))',
+          }}
+          onClick={petCat}
+        >
+          <svg id="kawaii-cat" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" className="w-full h-full overflow-visible">
+            {/* Tail */}
+            <path id="cat-tail" d="M160,150 Q180,110 170,90 T150,80" fill="none" stroke="var(--stone)" strokeWidth="20" strokeLinecap="round" />
+
+            <g id="cat-body">
+              {/* Body */}
+              <ellipse cx="100" cy="140" rx="70" ry="55" fill="var(--stone)" />
+              {/* Belly */}
+              <ellipse cx="100" cy="150" rx="35" ry="25" fill="var(--warm-white)" />
+              {/* Paws */}
+              <ellipse cx="70" cy="185" rx="12" ry="10" fill="var(--terracotta-light)" />
+              <ellipse cx="130" cy="185" rx="12" ry="10" fill="var(--terracotta-light)" />
+
+              <g id="cat-head">
+                {/* Head */}
+                <ellipse cx="100" cy="90" rx="60" ry="50" fill="var(--stone)" />
+
+                {/* Left ear */}
+                <path d="M55,60 L45,30 L75,50 Z" fill="var(--stone)" stroke="var(--stone)" strokeWidth="5" strokeLinejoin="round" />
+                <path d="M50,55 L48,40 L65,50 Z" fill="var(--terracotta-light)" />
+
+                {/* Right ear */}
+                <path d="M145,60 L155,30 L125,50 Z" fill="var(--stone)" stroke="var(--stone)" strokeWidth="5" strokeLinejoin="round" />
+                <path d="M150,55 L152,40 L135,50 Z" fill="var(--terracotta-light)" />
+
+                {/* Eyes - swap between normal and happy */}
+                {isPetting ? (
+                  <>
+                    {/* Happy squint eyes ^_^ */}
+                    <path d="M67,88 Q75,82 83,88" fill="none" stroke="var(--foreground)" strokeWidth="2.5" strokeLinecap="round" />
+                    <path d="M117,88 Q125,82 133,88" fill="none" stroke="var(--foreground)" strokeWidth="2.5" strokeLinecap="round" />
+                  </>
+                ) : (
+                  <>
+                    <circle id="left-eye" cx="75" cy="90" r="5" fill="var(--foreground)" />
+                    <circle id="right-eye" cx="125" cy="90" r="5" fill="var(--foreground)" />
+                  </>
+                )}
+
+                {/* Mouth & Nose */}
+                {isPetting ? (
+                  <>
+                    {/* Happy open mouth */}
+                    <ellipse cx="100" cy="98" rx="3" ry="2" fill="var(--terracotta-light)" />
+                    <path d="M92,100 Q96,103 100,106 Q104,103 108,100" fill="none" stroke="var(--foreground)" strokeWidth="2" strokeLinecap="round" />
+                    <ellipse cx="100" cy="104" rx="5" ry="3" fill="var(--terracotta-light)" opacity="0.6" />
+                  </>
+                ) : (
+                  <>
+                    <path d="M96,100 Q100,105 104,100" fill="none" stroke="var(--foreground)" strokeWidth="2" strokeLinecap="round" />
+                    <ellipse cx="100" cy="98" rx="3" ry="2" fill="var(--terracotta-light)" />
+                  </>
+                )}
+
+                {/* Blush - intensify when petting */}
+                <ellipse cx="60" cy="105" rx="8" ry="5" fill="var(--terracotta-light)" opacity={isPetting ? 0.7 : 0.4}>
+                  {isPetting && (
+                    <animate attributeName="rx" values="8;10;8" dur="0.4s" repeatCount="2" />
+                  )}
+                </ellipse>
+                <ellipse cx="140" cy="105" rx="8" ry="5" fill="var(--terracotta-light)" opacity={isPetting ? 0.7 : 0.4}>
+                  {isPetting && (
+                    <animate attributeName="rx" values="8;10;8" dur="0.4s" repeatCount="2" />
+                  )}
+                </ellipse>
+
+                {/* Whiskers */}
+                <path d="M50,95 L30,90" stroke="var(--stone-dark)" strokeWidth="2" strokeLinecap="round" />
+                <path d="M50,105 L30,110" stroke="var(--stone-dark)" strokeWidth="2" strokeLinecap="round" />
+                <path d="M150,95 L170,90" stroke="var(--stone-dark)" strokeWidth="2" strokeLinecap="round" />
+                <path d="M150,105 L170,110" stroke="var(--stone-dark)" strokeWidth="2" strokeLinecap="round" />
+
+                {/* Scarf */}
+                <path d="M70,130 Q100,150 130,130" fill="none" stroke="var(--malta-blue)" strokeWidth="6" strokeLinecap="round" />
+              </g>
+            </g>
+
+            {/* Floating hearts */}
+            {hearts.map((heart) => (
+              <g
+                key={heart.id}
+                style={{
+                  animation: `heart-rise 1.2s ease-out ${heart.delay}s forwards`,
+                  opacity: 0,
+                }}
               >
-                <p className="text-[8px] font-bold text-[var(--terracotta)] tracking-wider" style={{ fontFamily: 'var(--font-playfair), serif' }}>
-                  {cat.location.toUpperCase()}
-                </p>
-              </div>
-
-              {/* Malta stamp - top right */}
-              <div
-                className={`absolute -top-5 -right-5 z-20 ${cat.name === 'Luna' ? 'w-20 h-26' : 'w-16 h-20'}`}
-                style={{ transform: 'rotate(10deg)', width: cat.name === 'Luna' ? '80px' : '64px', height: cat.name === 'Luna' ? '104px' : '80px' }}
-              >
-                <Image
-                  src={cat.stamp}
-                  alt="Malta stamp"
-                  fill
-                  className="object-contain drop-shadow-md"
-                  sizes={cat.name === 'Luna' ? '80px' : '64px'}
-                />
-              </div>
-
-              {/* Photo */}
-              <div className="relative w-28 h-28 md:w-32 md:h-32 overflow-hidden bg-gray-100">
-                <Image
-                  src={cat.src}
-                  alt={cat.name}
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-500 sepia-[0.1]"
-                  sizes="150px"
-                />
-              </div>
-
-              {/* Name */}
-              <div className="pt-2 pb-1 text-center">
-                <p
-                  className="text-lg text-gray-600"
-                  style={{ fontFamily: 'var(--font-caveat), cursive' }}
+                <text
+                  x={heart.x + heart.dx}
+                  y={heart.y}
+                  fontSize={14 * heart.size}
+                  textAnchor="middle"
+                  fill="var(--terracotta-light)"
                 >
-                  {cat.name}
-                </p>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+                  &#x2764;
+                </text>
+              </g>
+            ))}
+          </svg>
+        </div>
 
-      {/* Subtle paw prints scattered */}
-      <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
-        <span className="absolute top-[15%] left-[25%] text-6xl rotate-12">🐾</span>
-        <span className="absolute top-[35%] right-[25%] text-4xl -rotate-12">🐾</span>
-        <span className="absolute bottom-[35%] left-[30%] text-5xl rotate-6">🐾</span>
-        <span className="absolute bottom-[25%] right-[30%] text-6xl -rotate-6">🐾</span>
-      </div>
+        {/* Decorative shapes */}
+        <div
+          className="absolute pointer-events-none"
+          style={{
+            width: 40,
+            height: 40,
+            background: 'var(--stone)',
+            borderRadius: '50%',
+            border: '3px solid white',
+            top: '40%',
+            left: '15%',
+            animation: 'hero-float-fast 4s infinite ease-in-out',
+          }}
+        />
+        <div
+          className="absolute pointer-events-none hidden md:block"
+          style={{
+            width: 0,
+            height: 0,
+            borderLeft: '15px solid transparent',
+            borderRight: '15px solid transparent',
+            borderBottom: '25px solid var(--malta-blue)',
+            top: '30%',
+            right: '15%',
+            transform: 'rotate(35deg)',
+            animation: 'hero-float 5s infinite ease-in-out',
+          }}
+        />
 
-      <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
-        {/* Main content */}
-        <div className="mb-8">
-          <div className="w-36 h-36 sm:w-48 sm:h-48 md:w-72 md:h-72 mx-auto -mb-6 sm:-mb-8">
-            <Image
-              src="/logo.png"
-              alt="Cats of Malta"
-              width={224}
-              height={224}
-              className="w-full h-full object-contain"
-              style={{ filter: 'drop-shadow(0 8px 20px rgba(180, 140, 100, 0.3))' }}
-              priority
-            />
-          </div>
-          <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold text-[var(--foreground)] mb-4 leading-tight" style={{ fontFamily: 'var(--font-fraunces), serif' }}>
-            Cats of <span className="text-[var(--terracotta)]">Malta</span>
-          </h1>
-          <p className="text-lg sm:text-xl md:text-2xl text-[var(--stone-dark)] mb-8 font-light">
-            Celebrating the picturesque street cats of Malta
-          </p>
+        {/* Annotation: Mediterranean Vibes */}
+        <div
+          className="absolute z-20 hidden md:block"
+          style={{
+            fontFamily: 'var(--font-gochi-hand), cursive',
+            fontSize: '1.5rem',
+            color: 'var(--stone-dark)',
+            top: '30%',
+            right: '22%',
+            transform: 'rotate(5deg)',
+          }}
+        >
+          Mediterranean<br />Vibes!
+        </div>
+
+        {/* Annotation: Pet me */}
+        <div
+          className="absolute z-20 hidden md:block"
+          style={{
+            fontFamily: 'var(--font-gochi-hand), cursive',
+            fontSize: '1.2rem',
+            color: 'var(--stone-dark)',
+            bottom: '15%',
+            left: '65%',
+          }}
+        >
+          &larr; Pet me?
         </div>
 
         {/* CTA Buttons */}
-        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center mb-12 sm:mb-16">
+        <div className="flex flex-col sm:flex-row gap-4 mt-10 z-20">
           <a
             href="#gallery"
-            className="soft-button px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold"
+            className="px-8 py-4 rounded-full text-lg text-white border-4 border-white cursor-pointer transition-all duration-200 text-center"
+            style={{
+              fontFamily: 'var(--font-fredoka), cursive',
+              backgroundColor: 'var(--terracotta)',
+              boxShadow: '0px 8px 0px rgba(0,0,0,0.05)',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-4px) scale(1.05)';
+              e.currentTarget.style.boxShadow = '0px 12px 0px rgba(196, 30, 58, 0.3)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = '';
+              e.currentTarget.style.boxShadow = '0px 8px 0px rgba(0,0,0,0.05)';
+            }}
           >
-            Meet the Cats ↓
+            Meet the Cats
           </a>
           <a
             href="#map"
-            className="px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold rounded-full bg-white text-[var(--golden-sun)] border-2 border-[var(--golden-sun)]/20 hover:border-[var(--golden-sun)] transition-all duration-300 hover:shadow-lg"
+            className="px-8 py-4 rounded-full text-lg text-white border-4 border-white cursor-pointer transition-all duration-200 text-center"
+            style={{
+              fontFamily: 'var(--font-fredoka), cursive',
+              backgroundColor: 'var(--malta-blue)',
+              boxShadow: '0px 8px 0px rgba(0,0,0,0.05)',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-4px) scale(1.05)';
+              e.currentTarget.style.boxShadow = '0px 12px 0px rgba(74, 144, 217, 0.3)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = '';
+              e.currentTarget.style.boxShadow = '0px 8px 0px rgba(0,0,0,0.05)';
+            }}
           >
             Explore the Map
           </a>
-        </div>
-
-        {/* Stats */}
-        <div className="flex flex-wrap justify-center gap-6 sm:gap-8 md:gap-12 text-center">
-          <div className="group">
-            <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-[var(--terracotta)] group-hover:scale-110 transition-transform duration-300">100+</div>
-            <div className="text-xs sm:text-sm text-[var(--stone-dark)] mt-1">Cats Documented</div>
-          </div>
-          <div className="group">
-            <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#e67e22] group-hover:scale-110 transition-transform duration-300">50+</div>
-            <div className="text-xs sm:text-sm text-[var(--stone-dark)] mt-1">Named by Community</div>
-          </div>
-          <div className="group">
-            <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-[var(--golden-sun)] group-hover:scale-110 transition-transform duration-300">∞</div>
-            <div className="text-xs sm:text-sm text-[var(--stone-dark)] mt-1">Cuteness</div>
-          </div>
         </div>
       </div>
 
       {/* Bottom wave transition */}
       <div className="absolute bottom-0 left-0 right-0">
-        <svg
-          viewBox="0 0 1440 120"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className="w-full h-auto"
-          preserveAspectRatio="none"
-        >
+        <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-auto" preserveAspectRatio="none">
           <path
             d="M0 120L60 110C120 100 240 80 360 70C480 60 600 60 720 65C840 70 960 80 1080 85C1200 90 1320 90 1380 90L1440 90V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z"
             fill="var(--warm-white)"

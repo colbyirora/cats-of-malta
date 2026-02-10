@@ -1,163 +1,50 @@
-'use client';
-
-import { useState, useEffect } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { sampleCats, sampleNameSuggestions } from '@/lib/sample-data';
+import { supabase } from '@/lib/supabase';
+import type { Cat, NameSuggestion } from '@/lib/types';
+import VoteCard from './VoteCard';
 
-// Simulated voting end dates (in production, this would come from the database)
-const votingEndDates: Record<string, Date> = {
-  '2': new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // 2 days from now
-};
+export const revalidate = 30;
 
-function CountdownTimer({ endDate }: { endDate: Date }) {
-  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+export default async function VotePage() {
+  // Fetch cats that are in suggesting or voting status and approved
+  const { data: cats, error } = await supabase
+    .from('cats')
+    .select('*')
+    .in('voting_status', ['suggesting', 'voting'])
+    .eq('approved', true)
+    .order('created_at', { ascending: false });
 
-  useEffect(() => {
-    const calculateTimeLeft = () => {
-      const difference = endDate.getTime() - Date.now();
-      if (difference > 0) {
-        setTimeLeft({
-          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
-          minutes: Math.floor((difference / 1000 / 60) % 60),
-          seconds: Math.floor((difference / 1000) % 60),
-        });
+  let catsWithSuggestions: (Cat & { suggestions: NameSuggestion[] })[] = [];
+
+  if (cats && cats.length > 0) {
+    // Fetch name suggestions for all voting cats
+    const catIds = cats.map((c: Cat) => c.id);
+    const { data: suggestions } = await supabase
+      .from('name_suggestions')
+      .select('*')
+      .in('cat_id', catIds)
+      .order('vote_count', { ascending: false });
+
+    // Group suggestions by cat_id
+    const suggestionsByCat: Record<string, NameSuggestion[]> = {};
+    for (const s of (suggestions || []) as NameSuggestion[]) {
+      if (!suggestionsByCat[s.cat_id]) {
+        suggestionsByCat[s.cat_id] = [];
       }
-    };
+      suggestionsByCat[s.cat_id].push(s);
+    }
 
-    calculateTimeLeft();
-    const timer = setInterval(calculateTimeLeft, 1000);
-    return () => clearInterval(timer);
-  }, [endDate]);
+    catsWithSuggestions = (cats as Cat[]).map((cat) => ({
+      ...cat,
+      suggestions: suggestionsByCat[cat.id] || [],
+    }));
+  }
 
-  return (
-    <div className="flex gap-1.5 sm:gap-2 justify-center">
-      {[
-        { value: timeLeft.days, label: 'd' },
-        { value: timeLeft.hours, label: 'h' },
-        { value: timeLeft.minutes, label: 'm' },
-        { value: timeLeft.seconds, label: 's' },
-      ].map((item, index) => (
-        <div key={index} className="bg-white/90 rounded-lg px-2 sm:px-3 py-1.5 sm:py-2 shadow-sm">
-          <span className="text-base sm:text-xl font-bold text-[var(--terracotta)]">{String(item.value).padStart(2, '0')}</span>
-          <span className="text-[10px] sm:text-xs text-[var(--stone-dark)] ml-0.5 sm:ml-1">{item.label}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-interface VoteCardProps {
-  cat: typeof sampleCats[0];
-  suggestions: typeof sampleNameSuggestions;
-}
-
-function VoteCard({ cat, suggestions }: VoteCardProps) {
-  const [selectedName, setSelectedName] = useState('');
-  const [hasVoted, setHasVoted] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const catSuggestions = suggestions.filter((s) => s.cat_id === cat.id);
-  const totalVotes = catSuggestions.reduce((sum, s) => sum + s.vote_count, 0);
-
-  const handleVote = async () => {
-    if (!selectedName) return;
-    setIsSubmitting(true);
-
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    setHasVoted(true);
-    setIsSubmitting(false);
-  };
-
-  return (
-    <div className="soft-card p-4 sm:p-6 bg-white">
-      <div className="flex flex-col md:flex-row gap-4 sm:gap-6">
-        {/* Cat Photo */}
-        <div className="flex-shrink-0 flex justify-center md:justify-start">
-          <Link href={`/cat/${cat.id}`}>
-            <div className="relative w-28 h-28 sm:w-36 sm:h-36 md:w-40 md:h-40 rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow">
-              <Image
-                src={cat.primary_photo}
-                alt="Cat photo"
-                fill
-                className="object-cover"
-                sizes="(max-width: 640px) 112px, (max-width: 768px) 144px, 160px"
-              />
-            </div>
-          </Link>
-        </div>
-
-        {/* Voting Content */}
-        <div className="flex-1">
-          <div className="flex items-start justify-between mb-4">
-            <div>
-              <h3 className="text-xl font-bold text-[var(--foreground)]" style={{ fontFamily: 'var(--font-fraunces), serif' }}>
-                Help Name This Cat!
-              </h3>
-              <p className="text-sm text-[var(--stone-dark)]">
-                {cat.location_name} &bull; {cat.color}
-              </p>
-            </div>
-            <span className="bg-[var(--terracotta)] text-white text-xs px-3 py-1 rounded-full font-semibold">
-              {totalVotes} votes
-            </span>
-          </div>
-
-          {/* Countdown */}
-          <div className="mb-4">
-            <p className="text-xs text-[var(--stone-dark)] mb-2 text-center">Voting ends in:</p>
-            <CountdownTimer endDate={votingEndDates[cat.id] || new Date(Date.now() + 24 * 60 * 60 * 1000)} />
-          </div>
-
-          {hasVoted ? (
-            <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-center">
-              <p className="text-green-700 font-medium">Thank you for voting!</p>
-              <p className="text-sm text-green-600">You voted for &quot;{selectedName}&quot;</p>
-            </div>
-          ) : (
-            <>
-              {/* Name Options */}
-              <div className="mb-4">
-                <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">
-                  Choose your favorite name:
-                </label>
-                <select
-                  value={selectedName}
-                  onChange={(e) => setSelectedName(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl soft-input bg-white text-[var(--foreground)]"
-                >
-                  <option value="">Select a name...</option>
-                  {catSuggestions.map((suggestion) => (
-                    <option key={suggestion.id} value={suggestion.suggested_name}>
-                      {suggestion.suggested_name} ({suggestion.vote_count} votes)
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Vote Button */}
-              <button
-                onClick={handleVote}
-                disabled={!selectedName || isSubmitting}
-                className="w-full py-3 rounded-xl font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed bg-[var(--terracotta)] text-white hover:bg-[var(--terracotta-dark)] shadow-md hover:shadow-lg"
-              >
-                {isSubmitting ? 'Submitting...' : 'Cast My Vote'}
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export default function VotePage() {
-  const votingCats = sampleCats.filter((cat) => cat.voting_status === 'voting');
+  if (error) {
+    console.error('Error fetching voting cats:', error);
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[var(--warm-white)] to-[var(--cream)]">
@@ -175,13 +62,13 @@ export default function VotePage() {
         </div>
 
         {/* Voting Cards */}
-        {votingCats.length > 0 ? (
+        {catsWithSuggestions.length > 0 ? (
           <div className="space-y-6">
-            {votingCats.map((cat) => (
+            {catsWithSuggestions.map((cat) => (
               <VoteCard
                 key={cat.id}
                 cat={cat}
-                suggestions={sampleNameSuggestions}
+                initialSuggestions={cat.suggestions}
               />
             ))}
           </div>

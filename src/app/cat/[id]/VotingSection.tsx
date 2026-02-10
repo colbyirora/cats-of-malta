@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { Cat } from '@/lib/types';
 
 interface NameSuggestion {
@@ -8,6 +8,7 @@ interface NameSuggestion {
   cat_id: string;
   suggested_name: string;
   vote_count: number;
+  created_at: string;
 }
 
 interface VotingSectionProps {
@@ -17,48 +18,126 @@ interface VotingSectionProps {
 
 export default function VotingSection({ cat, suggestions }: VotingSectionProps) {
   const [newSuggestion, setNewSuggestion] = useState('');
-  const [voted, setVoted] = useState<string | null>(null);
-  const [submitted, setSubmitted] = useState(false);
-  const [localSuggestions, setLocalSuggestions] = useState(suggestions);
+  const [localSuggestions, setLocalSuggestions] = useState<NameSuggestion[]>(suggestions);
+  const [submitting, setSubmitting] = useState(false);
+  const [voting, setVoting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+
+  // Check localStorage for previous actions
+  const [alreadySuggested, setAlreadySuggested] = useState(false);
+  const [alreadyVoted, setAlreadyVoted] = useState<string | null>(null);
+
+  useEffect(() => {
+    const suggested = localStorage.getItem(`suggested_${cat.id}`);
+    if (suggested) setAlreadySuggested(true);
+    const voted = localStorage.getItem(`voted_${cat.id}`);
+    if (voted) setAlreadyVoted(voted);
+  }, [cat.id]);
 
   const totalVotes = localSuggestions.reduce((sum, s) => sum + s.vote_count, 0);
 
+  async function fetchSuggestions() {
+    try {
+      const res = await fetch(`/api/suggestions?cat_id=${cat.id}`);
+      if (res.ok) {
+        const data = await res.json();
+        setLocalSuggestions(data.suggestions);
+      }
+    } catch {
+      // Silently fail on re-fetch; keep existing local state
+    }
+  }
+
   const handleSuggest = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newSuggestion.trim()) return;
+    if (!newSuggestion.trim() || alreadySuggested) return;
 
-    // In production, this would call the API
-    const newSug: NameSuggestion = {
-      id: `temp-${Date.now()}`,
-      cat_id: cat.id,
-      suggested_name: newSuggestion.trim(),
-      vote_count: 0,
-    };
+    setSubmitting(true);
+    setErrorMsg('');
 
-    setLocalSuggestions([...localSuggestions, newSug]);
-    setNewSuggestion('');
-    setSubmitted(true);
+    try {
+      const res = await fetch('/api/suggestions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cat_id: cat.id, suggested_name: newSuggestion.trim() }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        setErrorMsg(data.error || 'Failed to submit suggestion');
+        setSubmitting(false);
+        return;
+      }
+
+      // Mark as suggested in localStorage
+      localStorage.setItem(`suggested_${cat.id}`, 'true');
+      setAlreadySuggested(true);
+      setNewSuggestion('');
+
+      // Re-fetch suggestions to show the updated list
+      await fetchSuggestions();
+    } catch {
+      setErrorMsg('Network error. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleVote = async (suggestionId: string) => {
-    if (voted) return;
+    if (alreadyVoted || voting) return;
 
-    // In production, this would call the API
-    setLocalSuggestions(
-      localSuggestions.map((s) =>
-        s.id === suggestionId ? { ...s, vote_count: s.vote_count + 1 } : s
-      )
-    );
-    setVoted(suggestionId);
+    setVoting(true);
+    setErrorMsg('');
+
+    try {
+      const res = await fetch('/api/votes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ suggestion_id: suggestionId }),
+      });
+
+      if (res.status === 409) {
+        setErrorMsg('You have already voted for this cat.');
+        localStorage.setItem(`voted_${cat.id}`, suggestionId);
+        setAlreadyVoted(suggestionId);
+        setVoting(false);
+        return;
+      }
+
+      if (!res.ok) {
+        const data = await res.json();
+        setErrorMsg(data.error || 'Failed to submit vote');
+        setVoting(false);
+        return;
+      }
+
+      // Mark as voted in localStorage
+      localStorage.setItem(`voted_${cat.id}`, suggestionId);
+      setAlreadyVoted(suggestionId);
+
+      // Re-fetch suggestions to show updated vote counts
+      await fetchSuggestions();
+    } catch {
+      setErrorMsg('Network error. Please try again.');
+    } finally {
+      setVoting(false);
+    }
   };
 
   return (
     <div className="mt-8 soft-card p-8 bg-[var(--cream)]">
+      {/* Error message */}
+      {errorMsg && (
+        <div className="mb-4 p-3 rounded-xl bg-red-50 text-red-700 text-sm text-center">
+          {errorMsg}
+        </div>
+      )}
+
       {cat.voting_status === 'suggesting' ? (
         <>
           <div className="text-center mb-6">
             <span className="inline-block bg-[var(--golden-sun)] text-white px-4 py-1 rounded-full text-sm font-bold mb-2">
-              💡 Suggestion Phase
+              Suggestion Phase
             </span>
             <h2 className="text-2xl font-bold text-[var(--terracotta-dark)]">
               Help name this cat!
@@ -78,14 +157,14 @@ export default function VotingSection({ cat, suggestions }: VotingSectionProps) 
                 placeholder="Enter a name..."
                 maxLength={30}
                 className="flex-1 px-5 py-3 rounded-full soft-input"
-                disabled={submitted}
+                disabled={alreadySuggested || submitting}
               />
               <button
                 type="submit"
-                disabled={!newSuggestion.trim() || submitted}
+                disabled={!newSuggestion.trim() || alreadySuggested || submitting}
                 className="soft-button px-6 py-3 disabled:opacity-50"
               >
-                {submitted ? 'Submitted!' : 'Suggest'}
+                {submitting ? 'Submitting...' : alreadySuggested ? 'Submitted!' : 'Suggest'}
               </button>
             </div>
           </form>
@@ -111,7 +190,7 @@ export default function VotingSection({ cat, suggestions }: VotingSectionProps) 
         <>
           <div className="text-center mb-6">
             <span className="inline-block bg-[var(--malta-blue)] text-white px-4 py-1 rounded-full text-sm font-bold mb-2">
-              🗳️ Voting Phase
+              Voting Phase
             </span>
             <h2 className="text-2xl font-bold text-[var(--terracotta-dark)]">
               Vote for a name!
@@ -121,23 +200,30 @@ export default function VotingSection({ cat, suggestions }: VotingSectionProps) 
             </p>
           </div>
 
+          {/* Already voted message */}
+          {alreadyVoted && (
+            <p className="text-center mb-4 text-[var(--stone-dark)] text-sm">
+              Thanks for voting! Results will be announced at the end of the voting period.
+            </p>
+          )}
+
           {/* Voting options */}
           <div className="space-y-3 max-w-md mx-auto">
             {localSuggestions
               .sort((a, b) => b.vote_count - a.vote_count)
               .map((s) => {
                 const percentage = totalVotes > 0 ? (s.vote_count / totalVotes) * 100 : 0;
-                const isVoted = voted === s.id;
+                const isVoted = alreadyVoted === s.id;
 
                 return (
                   <button
                     key={s.id}
                     onClick={() => handleVote(s.id)}
-                    disabled={!!voted}
+                    disabled={!!alreadyVoted || voting}
                     className={`w-full p-4 rounded-2xl text-left transition-all duration-300 relative overflow-hidden ${
                       isVoted
                         ? 'bg-[var(--terracotta)]/10 shadow-md'
-                        : voted
+                        : alreadyVoted
                         ? 'bg-white/50 opacity-60'
                         : 'bg-white hover:shadow-md hover:scale-[1.02]'
                     }`}
@@ -157,19 +243,13 @@ export default function VotingSection({ cat, suggestions }: VotingSectionProps) 
 
                     {isVoted && (
                       <span className="relative text-xs text-[var(--terracotta)] mt-1 block">
-                        ✓ Your vote
+                        Your vote
                       </span>
                     )}
                   </button>
                 );
               })}
           </div>
-
-          {voted && (
-            <p className="text-center mt-4 text-[var(--stone-dark)] text-sm">
-              Thanks for voting! Results will be announced at the end of the voting period.
-            </p>
-          )}
         </>
       )}
     </div>
